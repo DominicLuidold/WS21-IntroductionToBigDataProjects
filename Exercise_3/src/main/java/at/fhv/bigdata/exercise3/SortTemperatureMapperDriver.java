@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -60,10 +61,10 @@ public class SortTemperatureMapperDriver extends Configured implements Tool {
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         // Set the type of the key in the output
-        job.setOutputKeyClass(YearTemperaturePair.class);
+        job.setOutputKeyClass(IntWritable.class);
 
         // Set the type of the value in the output
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(Text.class);
 
         return job.waitForCompletion(true) ? 0 : 1;
     }
