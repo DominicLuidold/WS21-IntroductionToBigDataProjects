@@ -1,10 +1,10 @@
 package at.fhv.bigdata.exercise5;
 
 
-import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -50,8 +50,11 @@ public class VSKDriver extends Configured implements Tool {
         job.setMapperClass(VSKMapper.class);
         job.setReducerClass(VSKReducer.class);
 
+        job.setMapOutputKeyClass(IntWritable.class);
+        job.setMapOutputValueClass(CentralMomentData.class);
+
         // Set the type of the key in the output
-        job.setOutputKeyClass(AvroKeyOutputFormat.class);
+        job.setOutputKeyClass(IntWritable.class);
 
         // Set the type of the value in the output
         job.setOutputValueClass(NullWritable.class);

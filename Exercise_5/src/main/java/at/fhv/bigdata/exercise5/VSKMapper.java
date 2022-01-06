@@ -2,7 +2,7 @@ package at.fhv.bigdata.exercise5;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import org.apache.avro.mapred.AvroKey;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -11,15 +11,15 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author Mariam Cordero Jimenez
  * @author Dominic Luidold
  */
-public class VSKMapper extends Mapper<LongWritable, Text, AvroKey<String>, CentralMomentPair> {
+public class VSKMapper extends Mapper<LongWritable, Text, IntWritable, CentralMomentData> {
     private final ArrayList<Double> temperatureValues = new ArrayList<>();
-    private String yearValue;
+    private int yearValue;
 
     @Override
     protected void map(LongWritable key, Text value, Context context) {
         String line = value.toString();
 
-        yearValue = line.substring(15, 19);
+        yearValue = Integer.parseInt(line.substring(15, 19));
         int temperature = Integer.parseInt(line.substring(87, 92)); // 87 includes "+" and "-"
         String qualityIndex = line.substring(92, 93);
 
@@ -31,9 +31,8 @@ public class VSKMapper extends Mapper<LongWritable, Text, AvroKey<String>, Centr
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
         context.write(
-            new AvroKey<>(yearValue),
-            new CentralMomentPair(
-                yearValue,
+            new IntWritable(yearValue),
+            new CentralMomentData(
                 VSKMathUtils.calcVariance(temperatureValues),
                 VSKMathUtils.calcSkewness(temperatureValues),
                 VSKMathUtils.calcKurtosis(temperatureValues)

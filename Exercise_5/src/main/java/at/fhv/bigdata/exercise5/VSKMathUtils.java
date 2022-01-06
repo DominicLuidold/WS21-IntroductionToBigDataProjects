@@ -1,7 +1,7 @@
 package at.fhv.bigdata.exercise5;
 
 import java.util.ArrayList;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
 import org.apache.commons.math3.stat.descriptive.moment.Skewness;
 
@@ -34,13 +34,15 @@ public final class VSKMathUtils {
     }
 
     public static double calcSkewness(ArrayList<Double> values) {
-        double[] convertedValues = ArrayUtils.toPrimitive((Double[]) values.toArray());
+        Double[] list = values.toArray(new Double[0]);
+        double[] convertedValues = ArrayUtils.toPrimitive(list);
 
         return new Skewness().evaluate(convertedValues, 0, convertedValues.length);
     }
 
     public static double calcKurtosis(ArrayList<Double> values) {
-        double[] convertedValues = ArrayUtils.toPrimitive((Double[]) values.toArray());
+        Double[] list = values.toArray(new Double[0]);
+        double[] convertedValues = ArrayUtils.toPrimitive(list);
 
         return new Kurtosis().evaluate(convertedValues, 0, convertedValues.length);
     }
