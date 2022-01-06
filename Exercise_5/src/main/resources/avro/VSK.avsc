@@ -1,0 +1,22 @@
+{
+  "type": "record",
+  "name": "VSKSchema",
+  "fields": [
+    {
+      "name": "year",
+      "type": "string"
+    },
+    {
+      "name": "variance",
+      "type": "double"
+    },
+    {
+      "name": "skewness",
+      "type": "double"
+    },
+    {
+      "name": "kurtosis",
+      "type": "double"
+    }
+  ]
+}
