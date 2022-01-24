@@ -2,7 +2,10 @@ package at.fhv.bigdata.exercise5;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.mapred.AvroKey;
+import org.apache.avro.mapred.AvroValue;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -11,7 +14,8 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author Mariam Cordero Jimenez
  * @author Dominic Luidold
  */
-public class VSKMapper extends Mapper<LongWritable, Text, IntWritable, CentralMomentData> {
+public class VSKMapper extends Mapper<LongWritable, Text, AvroKey<Integer>, AvroValue<GenericRecord>> {
+    private final GenericRecord record = new GenericData.Record(VSKSchema.INSTANCE.vskRecordSchema());
     private final ArrayList<Double> temperatureValues = new ArrayList<>();
     private int yearValue;
 
@@ -30,13 +34,11 @@ public class VSKMapper extends Mapper<LongWritable, Text, IntWritable, CentralMo
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-        context.write(
-            new IntWritable(yearValue),
-            new CentralMomentData(
-                VSKMathUtils.calcVariance(temperatureValues),
-                VSKMathUtils.calcSkewness(temperatureValues),
-                VSKMathUtils.calcKurtosis(temperatureValues)
-            )
-        );
+        record.put("year", yearValue);
+        record.put("variance", VSKMathUtils.calcVariance(temperatureValues));
+        record.put("skewness", VSKMathUtils.calcSkewness(temperatureValues));
+        record.put("kurtosis", VSKMathUtils.calcKurtosis(temperatureValues));
+
+        context.write(new AvroKey<>(yearValue), new AvroValue<>(record));
     }
 }

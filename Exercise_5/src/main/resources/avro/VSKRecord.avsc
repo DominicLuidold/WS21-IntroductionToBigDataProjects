@@ -1,10 +1,11 @@
 {
   "type": "record",
-  "name": "VSKSchema",
+  "name": "VSKRecord",
+  "doc": "A record containing Variance, Skewness & Kurtosis of the temperature",
   "fields": [
     {
       "name": "year",
-      "type": "string"
+      "type": "int"
     },
     {
       "name": "variance",

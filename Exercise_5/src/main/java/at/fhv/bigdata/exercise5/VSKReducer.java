@@ -1,14 +1,10 @@
 package at.fhv.bigdata.exercise5;
 
-import java.io.File;
 import java.io.IOException;
-import org.apache.avro.Schema;
-import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.DatumWriter;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.avro.mapred.AvroKey;
+import org.apache.avro.mapred.AvroValue;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -16,23 +12,26 @@ import org.apache.hadoop.mapreduce.Reducer;
  * @author Mariam Cordero Jimenez
  * @author Dominic Luidold
  */
-public class VSKReducer extends Reducer<IntWritable, CentralMomentData, IntWritable, NullWritable> {
-    private final Schema schema = WeatherSchema.INSTANCE.getWeatherSchema();
-    private final GenericRecord record = new GenericData.Record(schema);
+public class VSKReducer extends Reducer<AvroKey<Integer>, AvroValue<GenericRecord>, AvroKey<GenericRecord>, NullWritable> {
 
     @Override
-    protected void reduce(IntWritable key, Iterable<CentralMomentData> values, Context context) throws IOException {
-        for (CentralMomentData data : values) {
-            record.put("year", key.get());
-            record.put("variance", data.getVariance());
-            record.put("skewness", data.getSkewness());
-            record.put("kurtosis", data.getKurtosis());
-
-            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
-            DataFileWriter<GenericRecord> fileWriter = new DataFileWriter<>(datumWriter);
-            fileWriter.create(schema, new File("/avro-result_" + key.get() + ".avro"));
-            fileWriter.append(record);
-            fileWriter.close();
+    protected void reduce(
+        AvroKey<Integer> key,
+        Iterable<AvroValue<GenericRecord>> values,
+        Context context
+    ) throws IOException, InterruptedException {
+        for (AvroValue<GenericRecord> value : values) {
+            context.write(new AvroKey<>(newVSKRecord(value.datum())), NullWritable.get());
         }
+    }
+
+    private GenericRecord newVSKRecord(GenericRecord value) {
+        GenericRecord record = new GenericData.Record(VSKSchema.INSTANCE.vskRecordSchema());
+        record.put("year", value.get("year"));
+        record.put("variance", value.get("variance"));
+        record.put("skewness", value.get("skewness"));
+        record.put("kurtosis", value.get("kurtosis"));
+
+        return record;
     }
 }

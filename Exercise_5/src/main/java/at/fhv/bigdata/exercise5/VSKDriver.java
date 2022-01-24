@@ -1,13 +1,15 @@
 package at.fhv.bigdata.exercise5;
 
 
+import org.apache.avro.Schema;
+import org.apache.avro.mapreduce.AvroJob;
+import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.Tool;
@@ -46,18 +48,20 @@ public class VSKDriver extends Configured implements Tool {
         // Set the output file path
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-        // Set the mapper, reducer, grouping comparator and partitioner classes
-        job.setMapperClass(VSKMapper.class);
-        job.setReducerClass(VSKReducer.class);
+        // Set the schemas for avro input and output
+        AvroJob.setMapOutputKeySchema(job, Schema.create(Schema.Type.INT));
+        AvroJob.setMapOutputValueSchema(job, VSKSchema.INSTANCE.vskRecordSchema());
+        AvroJob.setOutputKeySchema(job, VSKSchema.INSTANCE.vskRecordSchema());
 
-        job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(CentralMomentData.class);
-
-        // Set the type of the key in the output
-        job.setOutputKeyClass(IntWritable.class);
+        // Set the type of the value in the input
+        job.setInputFormatClass(TextInputFormat.class);
 
         // Set the type of the value in the output
-        job.setOutputValueClass(NullWritable.class);
+        job.setOutputFormatClass(AvroKeyOutputFormat.class);
+
+        // Set the mapper, reducer and combiner classes
+        job.setMapperClass(VSKMapper.class);
+        job.setReducerClass(VSKReducer.class);
 
         return job.waitForCompletion(true) ? 0 : 1;
     }
